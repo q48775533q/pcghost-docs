@@ -141,7 +141,7 @@ http://pulsar-manager服务器地址:7750/swagger-ui.html
 
 
 
-
+```
 连接器下载地址参考
 wget https://dlcdn.apache.org/pulsar/pulsar-3.0.0/connectors/pulsar-io-aerospike-3.0.0.nar
 wget https://dlcdn.apache.org/pulsar/pulsar-3.0.0/connectors/pulsar-io-canal-3.0.0.nar
@@ -176,4 +176,4 @@ wget https://dlcdn.apache.org/pulsar/pulsar-3.0.0/connectors/pulsar-io-solr-3.0.
 wget https://dlcdn.apache.org/pulsar/pulsar-3.0.0/connectors/pulsar-io-netty-3.0.0.nar
 wget https://dlcdn.apache.org/pulsar/pulsar-3.0.0/connectors/pulsar-io-data-generator-3.0.0.nar
 wget https://dlcdn.apache.org/pulsar/pulsar-3.0.0/connectors/pulsar-io-twitter-3.0.0.nar
-
+```
