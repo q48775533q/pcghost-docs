@@ -1,0 +1,58 @@
+
+/data/soft/jdk1.8.0_161/bin/java -agentpath:/root/tools/jprofiler11.1.1/bin/linux-x64/libjprofilerti.so=port=10111,nowait -Djava.awheadless=true -Dfile.encoding=utf-8 -server -Xms256m -Xmx512m -Xss256K -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=64m -XX:SurvivorRatio=6 -XX:+UseParNewGC -XX:+DisableExplicitGC -verbose:gc -Xloggc:/data/applications/hestia-gateway-h5-8808/logs/gc.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data/applications/hestia-gateway-h5-8808/logs -Djava.io.tmpdir=/data/applications/hestia-gateway-h5-8808/logs -jar /data/applications/hestia-gateway-h5-8808/hestia-gateway-h5-1.0-SNAPSHOT.jar
+
+
+# 查看堆详情
+jmap -J-d64 -heap pid
+
+# 查看gc详情 百分比 1000为毫秒
+jstat -gcutil Pid 1000
+
+/data/soft/jdk1.8.0_161/bin/java 
+# 远程看gc 通过 jvisualvm
+# -Dcom.sun.management.jmxremote.port=8999 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false
+
+# 通过 jprofiler 访问gc
+# -agentpath:/root/tools/jprofiler11.1.1/bin/linux-x64/libjprofilerti.so=port=10111,nowait 
+
+# 开启 headless 模式
+-Djava.awt.headless=true 
+
+# 默认字符集
+-Dfile.encoding=utf-8 
+
+# jvm虚拟机参数 xms 初始堆大小 xmx最大堆大小 xss每个线程的堆栈大小 
+-Xmn 设置年轻代大小。整个JVM内存大小=年轻代大小 + 年老代大小 + 持久代大小。持久代一般固定大小为64m，所以增大年轻代后，将会减小年老代大小。此值对系统性能影响较大，Sun官方推荐配置为整个堆的3/8。
+# JDK1.8k开始 Metaspace代替了之前的Perm PermSize变成了MetaspaceSize MaxPermSize变成了MaxMetaspaceSize
+# -XX:+DisableExplicitGC，这个参数作用是禁止代码中显示调用GC,netty 使用的nio 和 jvm 中的 XX:+DisableExplicitGC配置的冲突导
+-server -Xms64m -Xmx128m -Xss256K -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=128m -XX:SurvivorRatio=6  -XX:+DisableExplicitGC 
+
+# CMS垃圾回收的特点是应用程序可以并发执行，所以应用停顿时间较短，实现了高响应时间的目的。
+# 缺点方面除了需要消耗较多的CPU资源外，由于是基于标记清除算法，故会造成内存碎片。
+# 为了解决内存碎片问题，CMS提供了JVM参数：-XX:+UseCMSCompactAtFullCollection -XX:CMSFullGCsBeforeCompaction=1
+# 来配置在进行了Full GC时，对老年代进行压缩整理，处理掉内存碎片，其中CMSFullGCsBeforeCompaction配置进行了多少次Full GC之后执行一次内存压缩。
+-XX:+UseConcMarkSweepGC -XX:+UseCMSCompactAtFullCollection -XX:CMSFullGCsBeforeCompaction=1
+
+# gc日志
+# -XX:+PrintGCDateStamps 使用PrintGCDateStamps记录的是系统时间
+# -XX:+PrintGCDetails 打印GC详细日志信息
+# -XX:+PrintHeapAtGC 在进行GC的前后打印出堆的信息
+# -XX:+PrintGCApplicationStoppedTime // 输出GC造成应用暂停的时间
+-verbose:gc -Xloggc:/data/applications/hestia-gateway-h5-8808/logs/gc.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps 
+
+# jvm 大小控制分割
+-XX:+UseGCLogFileRotation \
+-XX:NumberOfGCLogFiles=5 \
+-XX:GCLogFileSize=100k \
+
+# dump文件
+# -XX:+HeapDumpOnOutOfMemoryError 每次产生oom进行dump
+# -XX:+HeapDumpAfterFullGC 每次 full gc 前 产生 dump
+# -XX:+HeapDumpBeforeFullGC 每次 full gc 后 产生 dump
+-XX:+HeapDumpBeforeFullGC -XX:HeapDumpPath=/data/applications/hestia-gateway-h5-8808/logs 
+
+# 临时文件路径
+-Djava.io.tmpdir=/data/applications/hestia-gateway-h5-8808/logs 
+
+# jar包
+-jar /data/applications/hestia-gateway-h5-8808/hestia-gateway-h5-1.0-SNAPSHOT.jar
